@@ -113,20 +113,25 @@ class PolicyDataManager {
     // Get all policies
     async getAllPolicies() {
         try {
+            console.log('🔍 getAllPolicies: Making request to', `${this.apiBase}/api/policies`);
             const response = await fetch(`${this.apiBase}/api/policies`);
+            console.log('🔍 getAllPolicies: Response status:', response.status);
             const data = await response.json();
+            console.log('🔍 getAllPolicies: Response data:', data);
 
             // Handle both response formats: direct array or {success, policies} object
             if (Array.isArray(data)) {
+                console.log('🔍 getAllPolicies: Returning array of', data.length, 'policies');
                 return data;
             } else if (data.success && data.policies) {
+                console.log('🔍 getAllPolicies: Returning object.policies with', data.policies.length, 'policies');
                 return data.policies;
             } else {
-                console.warn('Unexpected response format from /api/policies:', data);
+                console.warn('🔍 getAllPolicies: Unexpected response format from /api/policies:', data);
                 return [];
             }
         } catch (error) {
-            console.error('❌ Error fetching policies:', error);
+            console.error('❌ getAllPolicies: Error fetching policies:', error);
             return [];
         }
     }

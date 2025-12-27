@@ -5515,9 +5515,15 @@ contact@vigagency.com`;
             }
 
             console.log('💾 Loading policies from server...');
+            console.log('🔍 DEBUG: window.policyDB exists?', !!window.policyDB);
+            console.log('🔍 DEBUG: window.policyDB.getAllPolicies exists?', typeof window.policyDB.getAllPolicies);
             try {
+                console.log('🔍 DEBUG: About to call getAllPolicies()...');
                 window.allPolicies = await window.policyDB.getAllPolicies();
+                console.log('🔍 DEBUG: getAllPolicies() returned, length:', window.allPolicies ? window.allPolicies.length : 'null/undefined');
                 console.log('✅ Successfully loaded', window.allPolicies.length, 'policies from server');
+                console.log('🔍 DEBUG: Raw policy data returned:', window.allPolicies);
+                console.log('🔍 DEBUG: Sample policy:', window.allPolicies[0]);
                 window.filteredPolicies = [...window.allPolicies];
             } catch (error) {
                 console.error('❌ ERROR loading policies:', error);
@@ -7036,6 +7042,22 @@ contact@vigagency.com`;
                                                 }
                                             }
 
+                                            // Store the policy ID for editing
+                                            window.currentEditingPolicyId = policyId;
+
+                                            // Show modal (reuse existing modal variable)
+                                            if (modal) {
+                                                // Update modal title to show which policy is being edited
+                                                const title = modal.querySelector('h2');
+                                                if (title) {
+                                                    const clientName = policy.insured_name || policy.client_name || policy.clientName || 'Unknown Client';
+                                                    title.innerHTML = `<i class="fas fa-edit"></i> Edit Policy - ${clientName}`;
+                                                }
+
+                                                modal.style.display = 'flex';
+                                                console.log('✅ Emergency edit modal opened for:', policy.insured_name);
+                                            }
+
                                             console.log('✅ Emergency editPolicy completed - all data populated');
 
                                         } catch (error) {
@@ -7833,29 +7855,45 @@ contact@vigagency.com`;
         };
 
         function closeEditPolicyModal(clearEditingId = false) {
+            console.log('🔄 Closing edit policy modal...');
             const modal = document.getElementById('editPolicyModal');
-            modal.classList.remove('active');
-
-            // Refresh the policy display to show updated data
-            if (window.currentEditingPolicyId) {
-                const policy = window.policyDB.getPolicyById(window.currentEditingPolicyId);
-                if (policy) {
-                    // Re-populate the cards with current policy data
-                    if (window.populateVehicles) window.populateVehicles(policy.vehicles || []);
-                    if (window.populateDrivers) window.populateDrivers(policy.drivers || []);
-                    if (window.populateTrailers) window.populateTrailers(policy.trailers || []);
-                    console.log('✅ Refreshed policy display after modal close');
-                }
+            if (modal) {
+                // Hide modal using display style (matches how it's shown with modal.style.display = 'flex')
+                modal.style.display = 'none';
+                console.log('✅ Modal closed successfully');
+            } else {
+                console.error('❌ Edit policy modal not found');
             }
 
             // Only clear editing ID when explicitly requested (after successful save)
             if (clearEditingId) {
                 window.currentEditingPolicyId = null;
+                console.log('✅ Editing ID cleared');
             }
         }
 
+        // Add click-outside-to-close functionality for edit policy modal
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('editPolicyModal');
+            if (modal && modal.style.display === 'flex' && e.target === modal) {
+                console.log('🔄 Closing modal by clicking outside');
+                closeEditPolicyModal();
+            }
+        });
+
+        // Add Escape key to close modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('editPolicyModal');
+                if (modal && modal.style.display === 'flex') {
+                    console.log('🔄 Closing modal with Escape key');
+                    closeEditPolicyModal();
+                }
+            }
+        });
+
         // Handle edit policy form submission
-        document.getElementById('editPolicyForm').addEventListener('submit', function(e) {
+        document.getElementById('editPolicyForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             if (!window.currentEditingPolicyId) {
@@ -7906,19 +7944,23 @@ contact@vigagency.com`;
             try {
                 console.log('💾 Updating policy:', window.currentEditingPolicyId, 'with data:', updatedData);
 
-                // Update in database
-                window.policyDB.updatePolicy(window.currentEditingPolicyId, updatedData);
+                // Update in database - AWAIT the async operation
+                const result = await window.policyDB.updatePolicy(window.currentEditingPolicyId, updatedData);
 
-                // Show success message
-                alert(`Policy updated successfully!\n\nPolicy: ${updatedData.insured_name}\nCarrier: ${updatedData.carrier}`);
+                if (result) {
+                    // Show success message
+                    alert(`Policy updated successfully!\n\nPolicy: ${updatedData.insured_name}\nCarrier: ${updatedData.carrier}`);
 
-                // Refresh display
-                window.allPolicies = window.policyDB.getAllPolicies();
-                window.applyFilters();
-                window.updateAdminStats();
+                    // Refresh display - AWAIT the async operations
+                    window.allPolicies = await window.policyDB.getAllPolicies();
+                    window.applyFilters();
+                    window.updateAdminStats();
 
-                // Close modal and clear editing ID
-                closeEditPolicyModal(true);
+                    // Close modal and clear editing ID
+                    closeEditPolicyModal(true);
+                } else {
+                    alert('Failed to update policy. Please try again.');
+                }
             } catch (error) {
                 console.error('Error updating policy:', error);
                 alert('Error updating policy. Please try again.');
