@@ -71,6 +71,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            color: white !important;
         }
 
         .dashboard-header p {
@@ -845,13 +846,9 @@
                         <li class="nav-item"><a href="../index.html#resources" class="nav-link">Resources</a></li>
                         <li class="nav-item"><a href="../index.html#about" class="nav-link">About</a></li>
                         <li class="nav-item"><a href="../index.html#contact" class="nav-link">Contact</a></li>
-                        <li class="nav-item"><a href="admin-dashboard.html" class="nav-link">Admin Panel</a></li>
                     </ul>
                 </div>
                 <div class="nav-actions">
-                    <div class="admin-indicator">
-                        <i class="fas fa-shield-alt"></i> ADMIN MODE
-                    </div>
                     <a href="#" class="btn btn-primary logout-btn-custom" id="logoutBtn">Logout</a>
                     <button class="nav-toggle" id="navToggle">
                         <span></span>
@@ -5312,14 +5309,8 @@ contact@vigagency.com`;
             console.log('📊 DEBUG: Loaded', window.allPolicies.length, 'policies from database');
             console.log('📊 DEBUG: Sample policies:', window.allPolicies.slice(0, 3));
 
-            // Add admin data banner
-            const adminBanner = document.createElement('div');
-            adminBanner.style.cssText = 'background: linear-gradient(135deg, #ff6b6b, #ee5a52); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);';
-            adminBanner.innerHTML = '<i class="fas fa-shield-alt" style="font-size: 24px;"></i><div><strong style="font-size: 18px;">ADMIN MODE - Client-Side Database</strong><br><span style="font-size: 14px; opacity: 0.9;">Managing all system policies with local storage. All changes are persistent.</span></div>';
-
             const dashboardContainer = document.querySelector('.dashboard-container');
             const adminStats = dashboardContainer.querySelector('.admin-stats');
-            dashboardContainer.insertBefore(adminBanner, adminStats);
 
             // Simulate loading delay for better UX
             console.log('⏰ DEBUG: About to call displayAllPolicies in setTimeout');
