@@ -3784,6 +3784,53 @@ contact@vigagency.com`;
             }
         }, 2000);
 
+        // Essential window functions for policy management
+        window.viewPolicy = function(policyId) {
+            console.log('📄 viewPolicy called with:', policyId);
+            const policy = window.allPolicies.find(p => p.id === policyId);
+            if (!policy) {
+                alert('Policy not found!');
+                return;
+            }
+
+            // Check if there's a saved COI document for this policy
+            if (policy.coiDocuments && policy.coiDocuments.length > 0) {
+                // Show the saved COI document
+                window.showCOIModal(policy);
+            } else {
+                // No COI found, offer to generate one
+                if (confirm('No COI document found for this policy. Would you like to generate one?')) {
+                    window.generateCOI(policyId, policy.policy_number);
+                }
+            }
+        };
+
+        window.deletePolicy = function(policyId, policyNumber) {
+            const policy = window.allPolicies.find(p => p.id === policyId);
+            const hasPhone = policy && policy.client_phone && policy.client_phone.trim() !== '';
+
+            let confirmMessage = `Are you sure you want to delete Policy ${policyNumber}?\n\nThis action cannot be undone.`;
+
+            if (hasPhone) {
+                confirmMessage += `\n\n🔐 Warning: Client "${policy.insured_name}" will lose login access.\n(Policy Number + Phone login will be removed)`;
+            }
+
+            if (confirm(confirmMessage)) {
+                window.allPolicies = window.allPolicies.filter(p => p.id !== policyId);
+                window.filteredPolicies = window.filteredPolicies.filter(p => p.id !== policyId);
+                location.reload(); // Reload to update display
+            }
+        };
+
+        window.sendCOIEmail = function(policyId, policyNumber) {
+            try {
+                showSimpleCOIEmailModal(policyId, policyNumber);
+            } catch (error) {
+                console.error('❌ COI email modal function not found:', error);
+                alert('COI email functionality is not available. Please refresh the page and try again.');
+            }
+        };
+
     </script>
             </div>
         </div>
