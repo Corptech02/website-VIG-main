@@ -3705,7 +3705,7 @@ contact@vigagency.com`;
                             deductible: t.deductible || t.Deductible || t.trailer_deductible || t['Trailer Deductible'] || t.physical_damage_deductible || '',
                             trailer_cost: t.trailer_cost || t['Trailer Cost'] || t.trailerCost || t.cost || t['Cost'] || t.value || t['Value'] || ''
                         };
-                    }));
+                    });
 
                 const validDrivers = (policy.drivers || [])
                     .filter(d => d && (d.name || d['Full Name'] || d.fullName || d.license_number || d['License Number']) &&
