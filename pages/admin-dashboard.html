@@ -3787,28 +3787,57 @@ contact@vigagency.com`;
         // Essential window functions for policy management
         window.viewPolicy = function(policyId) {
             console.log('📄 viewPolicy called with:', policyId);
-            console.log('🔍 Searching in window.allPolicies:', !!window.allPolicies, window.allPolicies?.length);
 
-            const policy = window.allPolicies.find(p => p.id === policyId);
-            console.log('🎯 Policy found:', !!policy, policy?.policy_number);
+            try {
+                console.log('🔍 Checking window.allPolicies exists:', typeof window.allPolicies);
+                console.log('🔍 window.allPolicies length:', window.allPolicies ? window.allPolicies.length : 'undefined');
 
-            if (!policy) {
-                alert('Policy not found!');
-                return;
-            }
-
-            // Check if there's a saved COI document for this policy
-            console.log('📋 Checking COI documents:', policy.coiDocuments?.length || 0);
-            if (policy.coiDocuments && policy.coiDocuments.length > 0) {
-                console.log('✅ COI documents found, calling showCOIModal');
-                // Show the saved COI document
-                window.showCOIModal(policy);
-            } else {
-                console.log('❌ No COI documents found, offering to generate');
-                // No COI found, offer to generate one
-                if (confirm('No COI document found for this policy. Would you like to generate one?')) {
-                    window.generateCOI(policyId, policy.policy_number);
+                if (!window.allPolicies) {
+                    console.error('❌ window.allPolicies is not defined');
+                    alert('Policy data not loaded. Please refresh the page.');
+                    return;
                 }
+
+                const policy = window.allPolicies.find(p => p.id === policyId);
+                console.log('🎯 Policy found:', !!policy);
+                if (policy) {
+                    console.log('🎯 Policy details:', policy.policy_number, policy.insured_name);
+                }
+
+                if (!policy) {
+                    console.error('❌ Policy not found with ID:', policyId);
+                    alert('Policy not found!');
+                    return;
+                }
+
+                // Check if there's a saved COI document for this policy
+                const coiCount = policy.coiDocuments ? policy.coiDocuments.length : 0;
+                console.log('📋 Checking COI documents:', coiCount);
+
+                if (policy.coiDocuments && policy.coiDocuments.length > 0) {
+                    console.log('✅ COI documents found, calling showCOIModal');
+                    // Show the saved COI document
+                    if (typeof window.showCOIModal === 'function') {
+                        window.showCOIModal(policy);
+                    } else {
+                        console.error('❌ showCOIModal function not found');
+                        alert('COI display function not available. Please refresh the page.');
+                    }
+                } else {
+                    console.log('❌ No COI documents found, offering to generate');
+                    // No COI found, offer to generate one
+                    if (confirm('No COI document found for this policy. Would you like to generate one?')) {
+                        if (typeof window.generateCOI === 'function') {
+                            window.generateCOI(policyId, policy.policy_number);
+                        } else {
+                            console.error('❌ generateCOI function not found');
+                            alert('COI generation function not available. Please refresh the page.');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error in viewPolicy function:', error);
+                alert('An error occurred while viewing the policy. Please try again.');
             }
         };
 
